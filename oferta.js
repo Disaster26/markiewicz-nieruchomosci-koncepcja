@@ -19,10 +19,11 @@
   /* galeria */
   var g = $('#gal'), f = o.foto;
   g.className = 'gal n' + Math.min(f.length, 3);
-  g.innerHTML = f.slice(0, 3).map(function (p, i) {
-    return '<button type="button" data-i="' + i + '" aria-label="Powiększ zdjęcie ' + (i + 1) + ' z ' + f.length + '"><img src="img/oferty/' + p + '" alt="' + esc(o.t) + ', zdjęcie ' + (i + 1) + '"' + (i ? ' loading="lazy"' : '') + '>' +
-      (i === 0 && f.length > 1 ? '<span class="gal-all"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg>' + f.length + ' zdjęcia</span>' : '') + '</button>';
+  g.innerHTML = f.map(function (p, i) {
+    return '<button type="button" data-i="' + i + '" aria-label="Powiększ zdjęcie ' + (i + 1) + ' z ' + f.length + '"><img src="img/o/' + p + (i ? 'k' : '') + '.webp" alt="' + esc(o.t) + ', zdjęcie ' + (i + 1) + '"' + (i ? ' loading="lazy"' : '') + '>' +
+      (i === 0 && f.length > 1 ? '<span class="gal-all"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg>' + f.length + (f.length > 4 ? ' zdjęć' : ' zdjęcia') + '</span>' : '') + '</button>';
   }).join('');
+  var gc = document.getElementById('gal-cap'); if (gc && f.length > 1) gc.textContent = f.length + (f.length > 4 ? ' zdjęć' : ' zdjęcia') + ' - przesuń w bok, dotknij, aby powiększyć';
 
   /* parametry */
   var spec = [['Rodzaj', S.KAT1[o.kat]]];
@@ -38,7 +39,7 @@
   o.opis.forEach(function (b) {
     if (b.h) h += '<h3>' + esc(b.h) + '</h3>';
     else if (b.p) h += '<p>' + esc(b.p) + '</p>';
-    else if (b.li) h += '<ul>' + b.li.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+    else if (b.li) h += '<ul' + (b.li.length > 3 && b.li.every(function (x) { return x.length < 42; }) ? ' class="two"' : '') + '>' + b.li.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
   });
   h += '<p class="note">Nr oferty: ' + o.id + '. W przypadku zakupu nieruchomości z oferty biura obowiązuje wynagrodzenie 3% + VAT. Ogłoszenie ma charakter informacyjny i nie stanowi oferty w rozumieniu art. 66 § 1 Kodeksu cywilnego.</p>';
   $('#opis').innerHTML = h;
@@ -49,12 +50,13 @@
   var sim = O.filter(function (x) { return x.id !== o.id && x.kat === o.kat; });
   if (sim.length < 3) sim = sim.concat(O.filter(function (x) { return x.id !== o.id && x.kat !== o.kat; }));
   $('#podobne').innerHTML = sim.slice(0, 3).map(function (x) { return S.card(x); }).join('');
+  S.initCars($('#podobne'));
   $('#podobne-l').href = 'oferty.html?kat=' + o.kat;
   $('#podobne-l').textContent = 'Wszystkie: ' + S.KAT[o.kat].toLowerCase();
 
   /* lightbox */
   var lb = $('#lb'), img = lb.querySelector('img'), cnt = lb.querySelector('.lb-c'), cur = 0, last = null;
-  function show(i) { cur = (i + f.length) % f.length; img.src = 'img/oferty/' + f[cur]; img.alt = o.t + ', zdjęcie ' + (cur + 1); cnt.textContent = (cur + 1) + ' / ' + f.length; }
+  function show(i) { cur = (i + f.length) % f.length; img.src = 'img/o/' + f[cur] + '.webp'; img.alt = o.t + ', zdjęcie ' + (cur + 1); cnt.textContent = (cur + 1) + ' / ' + f.length; }
   function open(i) { last = document.activeElement; show(i); lb.classList.add('open'); document.body.style.overflow = 'hidden'; lb.querySelector('.lb-x').focus(); }
   function close() { lb.classList.remove('open'); document.body.style.overflow = ''; if (last) last.focus(); }
   g.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) open(+b.getAttribute('data-i')); });
